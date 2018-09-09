@@ -23,14 +23,15 @@ class TUI:
 			# execute the command
 			# stdscr.getch blocks until there is input 
 			ch = chr(self.stdscr.getch())
-			logging.info("got key:%c" % ch)
 			commands.get(ch, lambda : None)()
 
 	def draw_intro(this):
 		logging.info("printing help screen")
-		#draw the introduction/help screen
+		height, width = this.stdscr.getmaxyx()
 		this.stdscr.clear()
-		this.stdscr.addstr(0, 0, "Hello World!")
+		this.stdscr.addstr(0, 0, "Welcome to Conway's 'Game of Life'!")
+		this.stdscr.addstr(1, 0, "Type l to load a pattern")
+		this.stdscr.addstr(height-1,0, "Implemented by Caeman Toombs")
 		this.stdscr.refresh()
 
 	def update(this):
@@ -41,7 +42,12 @@ class TUI:
 			r = ''.join(list(map(lambda x:' @'[x],this.core.matrix[row,:].flat)))
 			this.stdscr.addstr(row, 0, r)
 
-		#TODO print status bar
+		# print status bar
+		instructions = "(p)ause" if this.core.running else "(p)lay"
+		instructions += " (n)ext (h)elp (q)uit (l)oad pattern"
+		this.stdscr.addstr(height-1,0,instructions)
+		itrs = "itrs:%d" % this.core.itr
+		this.stdscr.addstr(height-1,width-1-len(itrs), itrs)
 
 		# show the new changes
 		this.stdscr.refresh()
@@ -54,6 +60,7 @@ class TUI:
 		this.running = True
 		this.input = threading.Thread(target=this.inputWorker)
 		this.input.start()
+		this.draw_intro()
 		
 	def quit(this):
 		logging.info("waiting on the worker thread to quit...")

@@ -23,6 +23,8 @@ class Core:
 		this.matrix = np.matrix(np.zeros(shape, dtype=int))
 		#create mutex for writing to matrix
 		this.lock = threading.Lock()
+		# track the number of iterations since the last clear
+		this.itr = 0
 
 	def __str__(this):
 		return str(this.matrix)
@@ -63,8 +65,10 @@ class Core:
 		try:
 			this.lock.acquire()
 			this.matrix = np.zeros(this.matrix.shape, dtype=int)
+			this.itr = 0
 		finally:
 			this.lock.release()
+		
 
 	def next(this):
 		try:
@@ -92,6 +96,7 @@ class Core:
 			values = list(map(lambda x:this.ruleset.get(x, 0), l))
 			#map (oldValue, numNeighbors) to a new value in 2d and replace the current state
 			this.matrix = np.matrix(values).reshape(this.matrix.shape)
+			this.itr+= 1
 		finally:
 			this.lock.release()
 
